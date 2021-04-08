@@ -26,6 +26,8 @@ private:
 	vector<queue<vector<int>>> dram_requests;
 	vector<bool> isBusyRegRead;
 	vector<bool> isBusyRegWrite;
+	queue<int> reg_read;
+	queue<int> reg_write;
 	int cycle;
 	int row_access_delay;
 	int col_access_delay;
@@ -33,9 +35,9 @@ private:
 	vector<int> currDRAMRequest;
 	bool emptyDRAMRequests();
 	bool isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write);
-	void updateCurrDRAMRequest(vector<int>& dep_reg_read, vector<int>& dep_reg_write);
-	void processCurrDRAMRequest(vector<int>& dep_reg_read, vector<int>& dep_reg_write);
-	vector<int> nextDRAMRequest(vector<int>& dep_reg_read, vector<int>& dep_reg_write);
+	void updateCurrDRAMRequest();
+	void processCurrDRAMRequest();
+	vector<int> nextDRAMRequest();
 	void updateDependencies(vector<int>& req);
 	void removeDependencies();
 	int getEndCycle(vector<int>& req);
@@ -57,7 +59,7 @@ public:
 		row_access_delay = row_access;
 		col_access_delay = col_access;
 		
-		currDRAMRequest = {-1, -1, -1, -1};
+		currDRAMRequest = {-1, -1, -1, -1, -1};
 		row_buffer_ind = -1;
 	}
 	

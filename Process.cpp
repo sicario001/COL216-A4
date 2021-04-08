@@ -172,7 +172,7 @@ void sw(int r_index, int register_ind, int Addr){
     int memoryAddress = get_address(register_ind, Addr);
 
     if((memoryAddress%4==0)&&(memoryAddress/4>=instruction_processed.size()) && (memoryAddress<1048576)){
-        ins_scheduler.pushDRAMRequest({1, r_index, memoryAddress});
+        ins_scheduler.pushDRAMRequest({1, r_index, memoryAddress, register_ind});
         
     }
     else{
@@ -192,7 +192,7 @@ void lw(int r_index, int register_ind, int Addr){
     int memoryAddress = get_address(register_ind, Addr);
 
     if((memoryAddress%4==0)&&(memoryAddress/4>=instruction_processed.size()) && (memoryAddress<1048576)){
-        ins_scheduler.pushDRAMRequest({0, r_index, memoryAddress});
+        ins_scheduler.pushDRAMRequest({0, r_index, memoryAddress, register_ind});
     }
     else{
         std::ostringstream oss;
