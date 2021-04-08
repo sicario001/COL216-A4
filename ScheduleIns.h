@@ -4,6 +4,7 @@
 #include<iostream>
 #include<vector>
 #include<queue>
+#include<deque>
 #include<unordered_map>
 #include<map>
 #include<string>
@@ -23,7 +24,7 @@ extern int num_row_writeback;
 class ScheduleIns{
 
 private:
-	vector<queue<vector<int>>> dram_requests;
+	vector<deque<vector<int>>> dram_requests;
 	vector<bool> isBusyRegRead;
 	vector<bool> isBusyRegWrite;
 	queue<int> reg_read;
@@ -52,7 +53,7 @@ private:
 public:
 	ScheduleIns(){}
 	ScheduleIns(int row_access, int col_access){
-		dram_requests = vector<queue<vector<int>>>(1024, queue<vector<int>>());
+		dram_requests = vector<deque<vector<int>>>(1024, deque<vector<int>>());
 		isBusyRegRead = vector<bool>(32, false);
 		isBusyRegWrite = vector<bool>(32, false);
 		cycle = 0;

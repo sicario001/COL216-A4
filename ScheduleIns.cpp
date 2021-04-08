@@ -112,7 +112,7 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 
 	if (currDRAMRequest[0]!=-1 && !dram_requests[row].empty()){
 		vector<int> nextReq = dram_requests[row].front();
-		dram_requests[row].pop();
+		dram_requests[row].pop_front();
 
 		return {nextReq[0], nextReq[1], nextReq[2], getEndCycle(nextReq), nextReq[3]};
 	}
@@ -120,10 +120,12 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 		if (!reg_read.empty()){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
-					vector<int> req = dram_requests[i].front();
-					if (req[0]==0 && (req[1]==reg_read.front())){
-						reg_read.pop();
-						return {req[0], req[1], req[2], getEndCycle(req), req[3]};
+					for(auto req : dram_requests[i]){
+						if (req[0]==0 && (req[1]==reg_read.front())){
+							reg_read.pop();
+							dram_requests[i].pop_front();
+							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
+						}
 					}
 				}
 			}
@@ -132,14 +134,17 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 		if (!reg_write.empty()){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
-					vector<int> req = dram_requests[i].front();
-					if (req[0]==0 && ((req[1]==reg_write.front())||(req[3]==reg_write.front()))){
-						reg_write.pop();
-						return {req[0], req[1], req[2], getEndCycle(req), req[3]};
-					}
-					else if (req[0]==1 && ((req[1]==reg_write.front())||(req[3]==reg_write.front()))){
-						reg_write.pop();
-						return {req[0], req[1], req[2], getEndCycle(req), req[3]};
+					for(auto req : dram_requests[i]){
+						if (req[0]==0 && ((req[1]==reg_write.front())||(req[3]==reg_write.front()))){
+							reg_write.pop();
+							dram_requests[i].pop_front();
+							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
+						}
+						else if (req[0]==1 && ((req[1]==reg_write.front())||(req[3]==reg_write.front()))){
+							reg_write.pop();
+							dram_requests[i].pop_front();
+							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
+						}
 					}
 				}
 			}
@@ -149,7 +154,7 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
 					vector<int> nextReq = dram_requests[i].front();
-					dram_requests[i].pop();
+					dram_requests[i].pop_front();
 					return {nextReq[0], nextReq[1], nextReq[2], getEndCycle(nextReq), nextReq[3]};
 
 				}
@@ -169,7 +174,7 @@ void ScheduleIns::processCurrDRAMRequest(){
 
 void ScheduleIns::pushDRAMRequest(vector<int>request){
 	int row = getRowInd(request[2]);
-	dram_requests[row].push(request);
+	dram_requests[row].push_back(request);
 	updateDependencies(request);
 }
 void ScheduleIns::updateDependencies(vector<int>& req){
