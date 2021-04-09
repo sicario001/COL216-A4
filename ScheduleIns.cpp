@@ -263,8 +263,12 @@ void ScheduleIns::cycleUpdate(vector<int> dep_reg_read, vector<int> dep_reg_writ
 
 }
 void ScheduleIns::processRemReq(){
-	if (currDRAMRequest!=vector<int>{-1, -1, -1, -1, -1}){
-		while (currDRAMRequest!=vector<int>{-1, -1, -1, -1, -1}){
+	if (!emptyDRAMRequests()){
+		if (currDRAMRequest[0]==-1){
+			cycle++;
+		}
+		updateCurrDRAMRequest();
+		while (currDRAMRequest[0]!=-1){
 			processCurrDRAMRequest();
 		}
 		cycle--;
