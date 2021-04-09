@@ -177,13 +177,10 @@ void ScheduleIns::processCurrDRAMRequest(){
 }
 
 void ScheduleIns::pushDRAMRequest(vector<int>request){
+	updateCurrDRAMRequest();
 	int row = getRowInd(request[2]);
 	dram_requests[row].push_back(request);
 	updateDependencies(request);
-	if (currDRAMRequest[0]==-1){
-		cycle++;
-	}
-	updateCurrDRAMRequest();
 }
 void ScheduleIns::updateDependencies(vector<int>& req){
 	if (req[0]==0){
