@@ -25,7 +25,7 @@ class ScheduleIns{
 
 private:
 	vector<deque<vector<int>>> dram_requests;
-	vector<bool> isBusyRegRead;
+	vector<bool> isBusyRegStore;
 	vector<bool> isBusyRegWrite;
 	queue<int> reg_read;
 	queue<int> reg_write;
@@ -35,7 +35,7 @@ private:
 	int row_buffer_ind ;
 	vector<int> currDRAMRequest;
 	bool emptyDRAMRequests();
-	bool isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write);
+	bool isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write, vector<int>& reg_to_store);
 	void updateCurrDRAMRequest();
 	void processCurrDRAMRequest();
 	vector<int> nextDRAMRequest();
@@ -54,7 +54,7 @@ public:
 	ScheduleIns(){}
 	ScheduleIns(int row_access, int col_access){
 		dram_requests = vector<deque<vector<int>>>(1024, deque<vector<int>>());
-		isBusyRegRead = vector<bool>(32, false);
+		isBusyRegStore = vector<bool>(32, false);
 		isBusyRegWrite = vector<bool>(32, false);
 		cycle = 0;
 		row_access_delay = row_access;
@@ -66,7 +66,7 @@ public:
 	
 	void pushDRAMRequest(vector<int> request);
 	int getCycle();
-	void cycleUpdate(vector<int>&dep_reg_read, vector<int>&dep_reg_write);
+	void cycleUpdate(vector<int> dep_reg_read, vector<int> dep_reg_write, vector<int> reg_to_store);
 	void processRemReq();
 };
 

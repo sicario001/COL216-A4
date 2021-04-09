@@ -33,7 +33,7 @@ void ScheduleIns::copy_register_val_to_buffer(int r_index, int col_val, int star
     row_buffer[col_val] = register_vec[r_index];
     num_row_buffer_updates++;
 	cout<<"Cycle "<<start_time<<"-"<<start_time+col_access_delay-1<<" : "<<"DRAM : Column access, column "<<col_val*4<<"-"<<(col_val+1)*4-1<<" of row buffer updated to "<<register_vec[r_index]<<"\n";
-	int memoryAddress = 4*(row_buffer_ind*1024+col_val);
+	int memoryAddress = (row_buffer_ind*1024+(4*col_val));
 	memory_changes[memoryAddress] = register_vec[r_index];
 }
 void ScheduleIns::copy_buffer_val_to_register(int r_index, int col_val, int start_time){
@@ -83,6 +83,7 @@ int ScheduleIns::getEndCycle(vector<int>& req){
 void ScheduleIns::updateCurrDRAMRequest(){
 	if (cycle == currDRAMRequest[3]+1 || currDRAMRequest[0]==-1){
 		currDRAMRequest = nextDRAMRequest();
+		// cout<<currDRAMRequest[0]<<" "<<currDRAMRequest[1]<<" "<<currDRAMRequest[2]<<" "<<currDRAMRequest[3]<<" "<<currDRAMRequest[4]<<"\n";
 	}
 }
 
@@ -91,7 +92,7 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 	removeDependencies();
 
 	while (!reg_read.empty()){
-		if (!isBusyRegRead[reg_read.front()]){
+		if (!isBusyRegStore[reg_read.front()]){
 			reg_read.pop();
 		}
 		else{
@@ -120,9 +121,10 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 		if (!reg_read.empty()){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
-					for(auto req : dram_requests[i]){
-						if (req[0]==0 && (req[1]==reg_read.front())){
+					for(auto req_it : dram_requests[i]){
+						if (req_it[0]==0 && (req_it[1]==reg_read.front())){
 							reg_read.pop();
+							auto req = dram_requests[i].front();
 							dram_requests[i].pop_front();
 							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
 						}
@@ -134,14 +136,16 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 		if (!reg_write.empty()){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
-					for(auto req : dram_requests[i]){
-						if (req[0]==0 && ((req[1]==reg_write.front())||(req[3]==reg_write.front()))){
+					for(auto req_it : dram_requests[i]){
+						if (req_it[0]==0 && ((req_it[1]==reg_write.front())||(req_it[3]==reg_write.front()))){
 							reg_write.pop();
+							auto req = dram_requests[i].front();
 							dram_requests[i].pop_front();
 							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
 						}
-						else if (req[0]==1 && ((req[1]==reg_write.front())||(req[3]==reg_write.front()))){
+						else if (req_it[0]==1 && ((req_it[1]==reg_write.front())||(req_it[3]==reg_write.front()))){
 							reg_write.pop();
+							auto req = dram_requests[i].front();
 							dram_requests[i].pop_front();
 							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
 						}
@@ -176,18 +180,22 @@ void ScheduleIns::pushDRAMRequest(vector<int>request){
 	int row = getRowInd(request[2]);
 	dram_requests[row].push_back(request);
 	updateDependencies(request);
+	if (currDRAMRequest[0]==-1){
+		cycle++;
+	}
+	updateCurrDRAMRequest();
 }
 void ScheduleIns::updateDependencies(vector<int>& req){
 	if (req[0]==0){
 		isBusyRegWrite[req[1]] = true;
 		if (req[3]!=-1){
-			isBusyRegRead[req[3]] = true;
+			isBusyRegStore[req[3]] = true;
 		}
 	}
 	else if (req[0]==1){
-		isBusyRegRead[req[1]] = true;
+		isBusyRegStore[req[1]] = true;
 		if (req[3]!=-1){
-			isBusyRegRead[req[3]] = true;
+			isBusyRegStore[req[3]] = true;
 		}
 	}
 }
@@ -195,13 +203,13 @@ void ScheduleIns::removeDependencies(){
 	if (currDRAMRequest[0] ==0){
 		isBusyRegWrite[currDRAMRequest[1]] = false;
 		if (currDRAMRequest[4]!=-1){
-			isBusyRegRead[currDRAMRequest[4]] = false;
+			isBusyRegStore[currDRAMRequest[4]] = false;
 		}
 	}
 	if (currDRAMRequest[0] ==1){
-		isBusyRegRead[currDRAMRequest[1]] = false;
+		isBusyRegStore[currDRAMRequest[1]] = false;
 		if (currDRAMRequest[4]!=-1){
-			isBusyRegRead[currDRAMRequest[4]] = false;
+			isBusyRegStore[currDRAMRequest[4]] = false;
 		}
 	}
 }
@@ -214,14 +222,19 @@ bool ScheduleIns::emptyDRAMRequests(){
 	}
 	return true;
 }
-bool ScheduleIns::isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write){
+bool ScheduleIns::isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write, vector<int>& reg_to_store){
 	for (int x:dep_reg_read){
 		if (x!=-1 && isBusyRegWrite[x]==true){
 			return false;
 		}
 	}
 	for (int x:dep_reg_write){
-		if (x!=-1 && (isBusyRegWrite[x]==true || isBusyRegRead[x]==true)){
+		if (x!=-1 && isBusyRegWrite[x]==true){
+			return false;
+		}
+	}
+	for (int x:reg_to_store){
+		if (x!=-1 && isBusyRegStore[x]==true){
 			return false;
 		}
 	}
@@ -229,12 +242,12 @@ bool ScheduleIns::isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write)
 
 }
 
-void ScheduleIns::cycleUpdate(vector<int>& dep_reg_read, vector<int>& dep_reg_write){
+void ScheduleIns::cycleUpdate(vector<int> dep_reg_read, vector<int> dep_reg_write, vector<int> reg_to_store){
 	cycle++;
 	queue<int>().swap(reg_read);
 	queue<int>().swap(reg_write);
-	if (!isSafeIns(dep_reg_read, dep_reg_write)){
-		for (auto x: dep_reg_read){
+	if (!isSafeIns(dep_reg_read, dep_reg_write, reg_to_store)){
+		for (auto x: reg_to_store){
 			if (x!=-1){
 				reg_read.push(x);
 			}
@@ -246,7 +259,7 @@ void ScheduleIns::cycleUpdate(vector<int>& dep_reg_read, vector<int>& dep_reg_wr
 		}
 	}
 	updateCurrDRAMRequest();
-	while (!isSafeIns(dep_reg_read, dep_reg_write)){
+	while (!isSafeIns(dep_reg_read, dep_reg_write, reg_to_store)){
 		processCurrDRAMRequest();
 	}
 

@@ -27,7 +27,7 @@ void add(int ri_index, int rj_index, int rk_index){
     vector<int> dep_reg_read = {rj_index, rk_index};
     vector<int> dep_reg_write = {ri_index};
     // cout<<ins_scheduler.getCycle()<<"\n";
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
     // operation
     register_vec[ri_index] = register_vec[rj_index] + register_vec[rk_index];
 
@@ -38,7 +38,7 @@ void add(int ri_index, int rj_index, int rk_index){
 void addi(int ri_index,int rj_index, int val){
     vector<int> dep_reg_read = {rj_index};
     vector<int> dep_reg_write = {ri_index};
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
     register_vec[ri_index] = register_vec[rj_index] +val;
     // print result
@@ -48,7 +48,7 @@ void addi(int ri_index,int rj_index, int val){
 void sub(int ri_index, int rj_index, int rk_index){
     vector<int> dep_reg_read = {rj_index, rk_index};
     vector<int> dep_reg_write = {ri_index};
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
     register_vec[ri_index] = register_vec[rj_index] - register_vec[rk_index];
     // print result
@@ -59,7 +59,7 @@ void mul(int ri_index, int rj_index, int rk_index){
     
     vector<int> dep_reg_read = {rj_index, rk_index};
     vector<int> dep_reg_write = {ri_index};
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
     register_vec[ri_index] = register_vec[rj_index] * register_vec[rk_index];
     // print result
@@ -70,7 +70,7 @@ void beq(int ri_index, int rj_index, int register_ind, int Addr){
 
     vector<int> dep_reg_read  = {ri_index, rj_index, register_ind};
     vector<int> dep_reg_write(0);
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
     int branchLineAddr = get_address(register_ind, Addr);
     if(branchLineAddr%4==0 && (branchLineAddr/4)<=instruction_processed.size()){
@@ -101,7 +101,7 @@ void bne(int ri_index, int rj_index, int register_ind, int Addr){
     vector<int> dep_reg_read  = {ri_index, rj_index, register_ind};
     vector<int> dep_reg_write(0);
 
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
     int branchLineAddr = get_address(register_ind, Addr);
 
@@ -131,7 +131,7 @@ void slt(int ri_index, int rj_index, int rk_index){
 
     vector<int> dep_reg_read = {rj_index, rk_index};
     vector<int> dep_reg_write = {ri_index};
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
     register_vec[ri_index] = register_vec[rj_index] < register_vec[rk_index];
     
@@ -142,7 +142,7 @@ void j(int register_ind, int Addr){
 
     vector<int> dep_reg_read = {register_ind};
     vector<int> dep_reg_write(0);
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
 
 
     int branchLineAddr = get_address(register_ind, Addr);
@@ -165,7 +165,7 @@ void sw(int r_index, int register_ind, int Addr){
     
     vector<int> dep_reg_read = {r_index, register_ind};
     vector<int> dep_reg_write(0);
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, dep_reg_read);
 
 	cout<<"Cycle "<<ins_scheduler.getCycle()<<" : DRAM request issued for sw instruction"<<"\n";
 
@@ -186,7 +186,7 @@ void lw(int r_index, int register_ind, int Addr){
 
     vector<int> dep_reg_read = {register_ind};
     vector<int> dep_reg_write = {r_index};
-    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write);
+    ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, dep_reg_read);
 
     cout<<"Cycle "<<ins_scheduler.getCycle()<<" : DRAM request issued for lw instruction"<<"\n";
     int memoryAddress = get_address(register_ind, Addr);
