@@ -52,5 +52,5 @@ void Dram::copy_register_val_to_buffer(int r_index, int col_val, int start_time)
 void Dram::copy_buffer_val_to_register(int r_index, int col_val, int start_time){
 	register_vec[r_index] = row_buffer[col_val];
 
-	cout<<"Cycle "<<start_time<<"-"<<start_time+col_access_delay-1<<" : "<<"DRAM : Column access, register "<<reg_ind_to_str[r_index]<<" updated"<<"\n";
+	cout<<"Cycle "<<start_time<<"-"<<start_time+col_access_delay-1<<" : "<<"DRAM : Column access, register "<<reg_ind_to_str[r_index]<<" updated to "<<register_vec[r_index]<<"\n";
 }
