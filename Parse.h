@@ -1,15 +1,11 @@
 #ifndef PARSE_H
 #define PARSE_H
 
-#include<iostream>
-#include <iomanip>
-#include<fstream>
 #include<string>
-#include<algorithm>
 #include<vector>
-#include<sstream>
 #include<unordered_map>
 #include<map>
+
 using namespace std;
 
 extern unordered_map<string, int> reg_str_to_ind;
@@ -19,7 +15,6 @@ extern vector<int> register_vec;
 extern vector<vector<int>> instruction_processed;
 extern vector<int> times_instruction_processed;
 extern int currentLineIndex;
-extern int cycles;
 
 bool check_all_digits(string num_str);
 bool is_correct_instruction_address(int ins_addr);

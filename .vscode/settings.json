@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.py": "python",
+        "*.html": "html",
+        "map": "cpp",
+        "sstream": "cpp"
+    }
+}

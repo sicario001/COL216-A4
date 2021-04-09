@@ -20,25 +20,16 @@ total of 2^20 bytes available
 
 unordered_map<string, int> reg_str_to_ind;
 vector<string> reg_ind_to_str;
-// initialize memory
-vector<int> memory_vec (1<<18, 0);
 
 // added for DRAM
-map<int, int> memory_changes;
+Dram dram;
 map<string, int> id_address;
-vector<int> row_buffer (256, 0);
-int row_access, col_access;
 
 // initialize registers
 vector<int> register_vec (32, 0);
 vector<vector<int>> instruction_processed;
 vector<int> times_instruction_processed;
 int currentLineIndex = 0;
-// void load_mips_instructions_in_memory
-int cycles = 0;
-int num_row_buffer_updates = 0;
-int num_row_activation = 0;
-int num_row_writeback = 0;
 
 void add_reg_str(int num, string pref,int start=0){
     stringstream ss;
@@ -77,7 +68,7 @@ int main(int argc, char** argv){
     }
     else{
         string filename = argv[1];
-
+        int row_access,col_access;
         cout<<"\nEnter the row_access_delay for DRAM : ";
         cin>>row_access;
         if (row_access<=0){
@@ -120,6 +111,7 @@ int main(int argc, char** argv){
             }
 
             try{
+                dram = Dram(row_access, col_access);
                 process_ins();
             }
             catch(const string exp){
@@ -127,22 +119,14 @@ int main(int argc, char** argv){
                 return 0;
             }
             
-            cout<<"\nRan in "<<dec<<cycles<<" clock cycles"<<endl;
+            cout<<"\nRan in "<<dec<<dram.getCycle()<<" clock cycles"<<endl;
             cout<<"Number of times each instruction was exectuted:\n";
             for (int i = 0; i < times_instruction_processed.size(); i++)
             {
                 cout<<setw(2)<<i+1<<" - "<<setw(5)<<instruction_vector_tokens[i][0]<<" : ";
                 cout<<setw(3)<<times_instruction_processed[i]<<"\n";
             }
-            cout<<"\nMemory content at the end of execution :\n";
-            for (auto x: memory_changes){
-            	int mem_add = x.first;
-            	int val_mem_add = x.second;
-            	cout<<mem_add<<"-"<<mem_add+3<<" : "<<val_mem_add<<"\n";
-            }
-            cout<<"\nNumber of row buffer updates : "<<num_row_buffer_updates<<"\n";
-            cout<<"\nNumber of row activations : "<<num_row_activation<<"\n";
-            cout<<"\nNumber of row writebacks : "<<num_row_writeback<<"\n";
+            dram.print_mem_state();
             return 0;
         }
         else{

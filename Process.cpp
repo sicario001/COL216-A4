@@ -1,9 +1,7 @@
-#include "ScheduleIns.h"
 #include "Process.h"
 
 
 ScheduleIns ins_scheduler;
-
 
 int get_address(int register_ind, int Addr){
     if (register_ind==-1){
@@ -26,13 +24,13 @@ void add(int ri_index, int rj_index, int rk_index){
     // cycle update
     vector<int> dep_reg_read = {rj_index, rk_index};
     vector<int> dep_reg_write = {ri_index};
-    // cout<<ins_scheduler.getCycle()<<"\n";
+    // cout<<dram.getCycle()<<"\n";
     ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, {});
     // operation
     register_vec[ri_index] = register_vec[rj_index] + register_vec[rk_index];
 
     // print result
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"add instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : "<<"add instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
 }
 
 void addi(int ri_index,int rj_index, int val){
@@ -42,7 +40,7 @@ void addi(int ri_index,int rj_index, int val){
 
     register_vec[ri_index] = register_vec[rj_index] +val;
     // print result
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"addi instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : "<<"addi instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
 }
 
 void sub(int ri_index, int rj_index, int rk_index){
@@ -52,7 +50,7 @@ void sub(int ri_index, int rj_index, int rk_index){
 
     register_vec[ri_index] = register_vec[rj_index] - register_vec[rk_index];
     // print result
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"sub instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : "<<"sub instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
 }
 
 void mul(int ri_index, int rj_index, int rk_index){
@@ -63,7 +61,7 @@ void mul(int ri_index, int rj_index, int rk_index){
 
     register_vec[ri_index] = register_vec[rj_index] * register_vec[rk_index];
     // print result
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"mul instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : "<<"mul instruction, "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
 }
 
 void beq(int ri_index, int rj_index, int register_ind, int Addr){
@@ -78,13 +76,13 @@ void beq(int ri_index, int rj_index, int register_ind, int Addr){
         if(register_vec[ri_index]==register_vec[rj_index]){
             currentLineIndex = branchLineAddr/4;
             if (currentLineIndex== instruction_processed.size()){
-	    		cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"bne instruction, jump to end of program\n";
+	    		cout<<"Cycle "<<dram.getCycle()<<" : "<<"bne instruction, jump to end of program\n";
 	    		return;
     		}
-            cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"beq instruction, jump to instruction address "<<branchLineAddr<<"\n";
+            cout<<"Cycle "<<dram.getCycle()<<" : "<<"beq instruction, jump to instruction address "<<branchLineAddr<<"\n";
         }
         else{
-            cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"beq instruction, no jump\n";
+            cout<<"Cycle "<<dram.getCycle()<<" : "<<"beq instruction, no jump\n";
         }
     }
     else{
@@ -106,17 +104,16 @@ void bne(int ri_index, int rj_index, int register_ind, int Addr){
     int branchLineAddr = get_address(register_ind, Addr);
 
     if(branchLineAddr%4==0 && (branchLineAddr/4)<=instruction_processed.size()){
-    	
         if(register_vec[ri_index]!=register_vec[rj_index]){
             currentLineIndex = branchLineAddr/4;
             if (currentLineIndex== instruction_processed.size()){
-	    		cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"bne instruction, jump to end of program\n";
+	    		cout<<"Cycle "<<dram.getCycle()<<" : "<<"bne instruction, jump to end of program\n";
 	    		return;
     		}
-            cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"bne instruction, jump to instruction address "<<branchLineAddr<<"\n";
+            cout<<"Cycle "<<dram.getCycle()<<" : "<<"bne instruction, jump to instruction address "<<branchLineAddr<<"\n";
         }
         else{
-            cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"bne instruction, no jump\n";
+            cout<<"Cycle "<<dram.getCycle()<<" : "<<"bne instruction, no jump\n";
         }
     }
     else{
@@ -135,7 +132,7 @@ void slt(int ri_index, int rj_index, int rk_index){
 
     register_vec[ri_index] = register_vec[rj_index] < register_vec[rk_index];
     
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"slt instruction. "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : "<<"slt instruction. "<<reg_ind_to_str[ri_index]<<" = "<<register_vec[ri_index]<<"\n";
 }
 
 void j(int register_ind, int Addr){
@@ -155,10 +152,10 @@ void j(int register_ind, int Addr){
         throw oss.str();     
     }
     if (currentLineIndex == instruction_processed.size()){
-    	cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"jump to end of program\n";
+    	cout<<"Cycle "<<dram.getCycle()<<" : "<<"jump to end of program\n";
     	return;
     }
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : "<<"jump to instruction address "<<branchLineAddr<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : "<<"jump to instruction address "<<branchLineAddr<<"\n";
 }
 
 void sw(int r_index, int register_ind, int Addr){
@@ -167,7 +164,7 @@ void sw(int r_index, int register_ind, int Addr){
     vector<int> dep_reg_write(0);
     ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, dep_reg_read);
 
-	cout<<"Cycle "<<ins_scheduler.getCycle()<<" : DRAM request issued for sw instruction"<<"\n";
+	cout<<"Cycle "<<dram.getCycle()<<" : DRAM request issued for sw instruction"<<"\n";
 
     int memoryAddress = get_address(register_ind, Addr);
 
@@ -188,7 +185,7 @@ void lw(int r_index, int register_ind, int Addr){
     vector<int> dep_reg_write = {r_index};
     ins_scheduler.cycleUpdate(dep_reg_read, dep_reg_write, dep_reg_read);
 
-    cout<<"Cycle "<<ins_scheduler.getCycle()<<" : DRAM request issued for lw instruction"<<"\n";
+    cout<<"Cycle "<<dram.getCycle()<<" : DRAM request issued for lw instruction"<<"\n";
     int memoryAddress = get_address(register_ind, Addr);
 
     if((memoryAddress%4==0)&&(memoryAddress/4>=instruction_processed.size()) && (memoryAddress<1048576)){
@@ -202,7 +199,7 @@ void lw(int r_index, int register_ind, int Addr){
 }
 
 void process_ins(){
-    ins_scheduler = ScheduleIns(row_access, col_access);
+    ins_scheduler = ScheduleIns();
     times_instruction_processed = vector<int>(instruction_processed.size(),0);
     while (currentLineIndex<instruction_processed.size())
     {
@@ -236,7 +233,6 @@ void process_ins(){
         // printState();
     }
     ins_scheduler.processRemReq();
-    cycles = ins_scheduler.getCycle();
     cout<<"\nFinal register states :\n";
     printState();
 }

@@ -3,14 +3,9 @@
 
 #include<iostream>
 #include<iomanip>
-#include<fstream>
 #include<string>
-#include<algorithm>
-#include<vector>
-#include<sstream>
-#include<unordered_map>
-#include<map>
-#include<set>
+
+#include "ScheduleIns.h"
 
 using namespace std;
 
@@ -21,10 +16,7 @@ extern vector<int> register_vec;
 extern vector<vector<int>> instruction_processed;
 extern vector<int> times_instruction_processed;
 extern int currentLineIndex;
-extern int cycles;
-extern int row_access;
-extern int col_access;
-
+extern Dram dram;
 
 
 

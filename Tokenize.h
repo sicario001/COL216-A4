@@ -1,8 +1,6 @@
 #ifndef TOKENIZE_H
 #define TOKENIZE_H
 
-#include<iostream>
-#include<iomanip>
 #include<fstream>
 #include<string>
 #include<algorithm>
@@ -20,7 +18,6 @@ extern vector<int> register_vec;
 extern vector<vector<int>> instruction_processed;
 extern vector<int> times_instruction_processed;
 extern int currentLineIndex;
-extern int cycles;
 
 int check_comma(string s);
 int count_comma(string x);
