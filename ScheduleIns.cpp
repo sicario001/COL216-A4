@@ -59,23 +59,7 @@ void ScheduleIns::updateCurrDRAMRequest(){
 vector<int> ScheduleIns::nextDRAMRequest(){
 	
 	removeDependencies();
-
-	while (!reg_read.empty()){
-		if (!isBusyRegStore[reg_read.front()]){
-			reg_read.pop();
-		}
-		else{
-			break;
-		}
-	}
-	while (!reg_write.empty()){
-		if (!isBusyRegWrite[reg_write.front()]){
-			reg_write.pop();
-		}
-		else{
-			break;
-		}
-	}
+	removeNonDependentRegs();
 	
 
 	int row = getRowInd(currDRAMRequest[2]);
@@ -91,7 +75,7 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
 					for(auto req_it : dram_requests[i]){
-						if (req_it[0]==0 && (req_it[1]==reg_read.front())){
+						if (checkDependencies(0, reg_read.front(), req_it)){
 							reg_read.pop();
 							auto req = dram_requests[i].front();
 							dram_requests[i].pop_front();
@@ -106,13 +90,7 @@ vector<int> ScheduleIns::nextDRAMRequest(){
 			for (int i=0; i<1024; i++){
 				if (!dram_requests[i].empty()){
 					for(auto req_it : dram_requests[i]){
-						if (req_it[0]==0 && ((req_it[1]==reg_write.front())||(req_it[3]==reg_write.front()))){
-							reg_write.pop();
-							auto req = dram_requests[i].front();
-							dram_requests[i].pop_front();
-							return {req[0], req[1], req[2], getEndCycle(req), req[3]};
-						}
-						else if (req_it[0]==1 && ((req_it[1]==reg_write.front())||(req_it[3]==reg_write.front()))){
+						if (checkDependencies(1, reg_write.front(), req_it)){
 							reg_write.pop();
 							auto req = dram_requests[i].front();
 							dram_requests[i].pop_front();
@@ -180,6 +158,50 @@ void ScheduleIns::removeDependencies(){
 	}
 }
 
+bool ScheduleIns::checkDependencies(int type, int reg, vector<int>& req){
+	// type = 0 : reg_read
+	// type = 1 : reg_write
+	if (type==0){
+		if (req[0]==0){
+			if (req[3]==reg){
+				return true;
+			}
+		}
+		else{
+			if (req[1]==reg || req[3]==reg){
+				return true;
+			}
+		}
+	}
+	else{
+		if (req[0]==0){
+			if (req[1]==reg){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void ScheduleIns::removeNonDependentRegs(){
+	while (!reg_read.empty()){
+		if (!isBusyRegStore[reg_read.front()]){
+			reg_read.pop();
+		}
+		else{
+			break;
+		}
+	}
+	while (!reg_write.empty()){
+		if (!isBusyRegWrite[reg_write.front()]){
+			reg_write.pop();
+		}
+		else{
+			break;
+		}
+	}
+}
+
 bool ScheduleIns::emptyDRAMRequests(){
 	for (auto x: dram_requests){
 		if (!x.empty()){
@@ -219,6 +241,12 @@ void ScheduleIns::cycleUpdate(vector<int> dep_reg_read, vector<int> dep_reg_writ
 			}
 		}
 		for (auto x: dep_reg_write){
+			if (x!=-1){
+				reg_write.push(x);
+			}
+		}
+
+		for (auto x: dep_reg_read){
 			if (x!=-1){
 				reg_write.push(x);
 			}

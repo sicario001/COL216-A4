@@ -28,6 +28,8 @@ private:
 	vector<int> nextDRAMRequest();
 	void updateDependencies(vector<int>& req);
 	void removeDependencies();
+	bool checkDependencies(int type, int reg, vector<int>& req);
+	void removeNonDependentRegs();
 	int getEndCycle(vector<int>& req);
 	int getRowInd(int addr);
 	int getColInd(int addr);
