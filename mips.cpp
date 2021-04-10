@@ -119,7 +119,7 @@ int main(int argc, char** argv){
                 return 0;
             }
             
-            cout<<"\nRan in "<<dec<<dram.getCycle()<<" clock cycles"<<endl;
+            cout<<"\nRan in "<<dec<<dram.getFinalCycle()<<" clock cycles"<<endl;
             cout<<"Number of times each instruction was exectuted:\n";
             for (int i = 0; i < times_instruction_processed.size(); i++)
             {

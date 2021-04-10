@@ -15,6 +15,7 @@ extern vector<string> reg_ind_to_str;
 class Dram{
 	private:
 		int cycle;
+		int actual_cycle;
 		vector<int> memory_vec;
 		map<int, int> memory_changes;
 		vector<int> row_buffer;
@@ -25,6 +26,7 @@ class Dram{
 		Dram(){}
 		Dram(int row_access, int col_access){
 			cycle = 0;
+			actual_cycle = 0;
 			memory_vec = vector<int>(1<<18,0);
 			row_buffer = vector<int>(256,0);
 			num_row_buffer_updates = 0;
@@ -39,6 +41,7 @@ class Dram{
 		int row_buffer_ind;
         void print_mem_state();
 		int getCycle();
+		int getFinalCycle();
 		void incCycle();
 		void decCycle();
 		void setCycle(int c);
