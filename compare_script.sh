@@ -1,1 +1,1 @@
-for i in tests/*;do diff -cw <(./sim0 tests/test_part2.asm < inp) <(./sim tests/test_part2.asm < inp);done
+for i in tests/*;do exho "$i"; diff -cw <(./sim0 "$i" true < inp) <(./sim "$i" < inp);done
