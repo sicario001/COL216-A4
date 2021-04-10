@@ -133,13 +133,14 @@ void ScheduleIns::updateDependencies(vector<int>& req){
 	if (req[0]==0){
 		isBusyRegWrite[req[1]] = true;
 		if (req[3]!=-1){
-			isBusyRegStore[req[3]] = true;
+			isBusyRegStore[req[3]]++;
 		}
 	}
 	else if (req[0]==1){
 		isBusyRegStore[req[1]] = true;
+		RegValChanged[req[1]] = false;
 		if (req[3]!=-1){
-			isBusyRegStore[req[3]] = true;
+			isBusyRegStore[req[3]]++;
 		}
 	}
 }
@@ -147,13 +148,22 @@ void ScheduleIns::removeDependencies(){
 	if (currDRAMRequest[0] ==0){
 		isBusyRegWrite[currDRAMRequest[1]] = false;
 		if (currDRAMRequest[4]!=-1){
-			isBusyRegStore[currDRAMRequest[4]] = false;
+			isBusyRegStore[currDRAMRequest[4]]--;
+			if (isBusyRegStore[currDRAMRequest[4]]==0){
+				RegValChanged[currDRAMRequest[4]] = false;
+			}
 		}
 	}
 	if (currDRAMRequest[0] ==1){
-		isBusyRegStore[currDRAMRequest[1]] = false;
+		isBusyRegStore[currDRAMRequest[1]]--;
+		if (isBusyRegStore[currDRAMRequest[1]]==0){
+			RegValChanged[currDRAMRequest[1]] = false;
+		}
 		if (currDRAMRequest[4]!=-1){
-			isBusyRegStore[currDRAMRequest[4]] = false;
+			isBusyRegStore[currDRAMRequest[4]]--;
+			if (isBusyRegStore[currDRAMRequest[4]]==0){
+				RegValChanged[currDRAMRequest[4]] = false;
+			}
 		}
 	}
 }
@@ -185,7 +195,7 @@ bool ScheduleIns::checkDependencies(int type, int reg, vector<int>& req){
 
 void ScheduleIns::removeNonDependentRegs(){
 	while (!reg_read.empty()){
-		if (!isBusyRegStore[reg_read.front()]){
+		if (isBusyRegStore[reg_read.front()]==0 || !RegValChanged[reg_read.front()]){
 			reg_read.pop();
 		}
 		else{
@@ -222,7 +232,7 @@ bool ScheduleIns::isSafeIns(vector<int>&dep_reg_read, vector<int>&dep_reg_write,
 		}
 	}
 	for (int x:reg_to_store){
-		if (x!=-1 && isBusyRegStore[x]==true){
+		if (x!=-1 && isBusyRegStore[x] && RegValChanged[x]==true){
 			return false;
 		}
 	}
@@ -234,6 +244,8 @@ void ScheduleIns::cycleUpdate(vector<int> dep_reg_read, vector<int> dep_reg_writ
 	dram.incCycle();
 	queue<int>().swap(reg_read);
 	queue<int>().swap(reg_write);
+	// check this
+	
 	if (!isSafeIns(dep_reg_read, dep_reg_write, reg_to_store)){
 		for (auto x: reg_to_store){
 			if (x!=-1){
@@ -255,6 +267,12 @@ void ScheduleIns::cycleUpdate(vector<int> dep_reg_read, vector<int> dep_reg_writ
 	updateCurrDRAMRequest();
 	while (!isSafeIns(dep_reg_read, dep_reg_write, reg_to_store)){
 		processCurrDRAMRequest();
+	}
+
+	for (auto x: dep_reg_write){
+		if (x!=-1 && isBusyRegStore[x]){
+			RegValChanged[x] = true;
+		}
 	}
 
 

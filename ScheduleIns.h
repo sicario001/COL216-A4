@@ -16,8 +16,9 @@ class ScheduleIns{
 
 private:
 	vector<deque<vector<int>>> dram_requests;
-	vector<bool> isBusyRegStore;
+	vector<int> isBusyRegStore;
 	vector<bool> isBusyRegWrite;
+	vector<bool> RegValChanged;
 	queue<int> reg_read;
 	queue<int> reg_write;
 	vector<int> currDRAMRequest;
@@ -37,8 +38,9 @@ private:
 public:
 	ScheduleIns(){
 		dram_requests = vector<deque<vector<int>>>(1024, deque<vector<int>>());
-		isBusyRegStore = vector<bool>(32, false);
+		isBusyRegStore = vector<int>(32, 0);
 		isBusyRegWrite = vector<bool>(32, false);
+		RegValChanged = vector<bool>(32, false);
 		currDRAMRequest = {-1, -1, -1, -1, -1};
 	}
 	
